@@ -6,7 +6,7 @@
 
 #define THRESH 1.0f
 
-__device__ float2 operator /= (float2 quotient, float divisor) {
+__device__ float2 operator /= (float2 & quotient,float divisor) {
     quotient.x /= divisor;
     quotient.y /= divisor;
     return quotient;
@@ -14,7 +14,7 @@ __device__ float2 operator /= (float2 quotient, float divisor) {
 bool operator == (const float2 first, const float2 second) {
     return (fabs(first.y-second.y) <= THRESH)&&(fabs(first.x-second.x) <= THRESH);
 }
-__device__ float2 operator += (float2 first,float2 other) {
+__device__ float2 operator += (float2 & first,const float2 & other) {
     first.x += other.x;
     first.y += other.y;
     return first;
@@ -47,10 +47,10 @@ __global__ void average(float2 * results, float2 * averages) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     averages[idx].x = 0;
     averages[idx].y = 0;
-    averages[idx] = results[4*idx];
-    averages[idx] = results[4*idx+1];
-    averages[idx] = results[4*idx+2];
-    averages[idx] = results[4*idx+3];
+    averages[idx] += results[4*idx];
+    averages[idx] += results[4*idx+1];
+    averages[idx] += results[4*idx+2];
+    averages[idx] += results[4*idx+3];
     averages[idx] /= 4.0;
 }
 void generate_data(int NUM) {
@@ -115,7 +115,7 @@ void generate_data(int NUM) {
 int main() {
     //clock_t start = clock();
     //double diff;
-    generate_data(4096);
+    generate_data(16);
     //diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
     //std::cout << "Time elapsed: "<< diff <<'\n';
     return 0;
