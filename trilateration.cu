@@ -101,7 +101,7 @@ void generate_data(int NUM) {
         std::cout << (results[i] == trail[i] ? "Pass\n" : "Fail\n");
     }
     for (int i = 0; i < NUM/4; i++) {
-        std::cout << "average x: " << averages[i].x << "average y: " << averages[i].y << std::endl;
+        std::cout << "average x: " << averages[i].x << " average y: " << averages[i].y << std::endl;
     }
     delete [] distances;
     delete [] trail;
@@ -115,7 +115,7 @@ void generate_data(int NUM) {
 int main() {
     //clock_t start = clock();
     //double diff;
-    generate_data(16);
+    generate_data(4096);
     //diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
     //std::cout << "Time elapsed: "<< diff <<'\n';
     return 0;
