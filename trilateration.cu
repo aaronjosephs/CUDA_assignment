@@ -6,9 +6,9 @@
 
 #define THRESH 1.0f
 
-__device__ float2 operator /= (float2 quotient, int divisor) {
-    quotient.x /= (float)divisor;
-    quotient.y /= (float)divisor;
+__device__ float2 operator /= (float2 quotient, float divisor) {
+    quotient.x /= divisor;
+    quotient.y /= divisor;
     return quotient;
 }
 bool operator == (const float2 first, const float2 second) {
@@ -43,7 +43,16 @@ __global__ void trilateration(float2*results,float3*distances,float2 guard_point
     float2 result = {x,y};
     results[idx] = result;
 }
-
+__global__ void average(float2 * results, float2 * averages) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    averages[idx].x = 0;
+    averages[idx].y = 0;
+    averages[idx] = results[4*idx];
+    averages[idx] = results[4*idx+1];
+    averages[idx] = results[4*idx+2];
+    averages[idx] = results[4*idx+3];
+    averages[idx] /= 4.0;
+}
 void generate_data(int NUM) {
     assert(NUM%4 ==0);
     float3 * distances = new float3[NUM];
@@ -51,6 +60,8 @@ void generate_data(int NUM) {
     float2 * results = new float2[NUM];
     float3 * device_distances;
     float2 * device_results;
+    float2 * device_averages;
+    float2 * averages = new float2[NUM/4];
     srand (time(NULL));
     const float2 guard_point_a = {(float)rand()/(float)RAND_MAX*1000.0,(float)rand()/(float)RAND_MAX*1000.0};
     const float2 guard_point_b = {(float)rand()/(float)RAND_MAX*1000.0,(float)rand()/(float)RAND_MAX*1000.0};
@@ -73,22 +84,30 @@ void generate_data(int NUM) {
     size_t results_size = NUM * sizeof(float2);
     cudaMalloc((void**)&device_distances,distances_size);
     cudaMalloc((void**)&device_results,results_size);
+    cudaMalloc((void**)&device_averages,results_size/4);
     cudaMemcpy(device_distances,distances,distances_size,cudaMemcpyHostToDevice);
     int block_num = 4;
     trilateration<<<block_num,NUM/block_num>>>(device_results,device_distances,guard_point_a,guard_point_b,guard_point_c);
+    average<<<block_num,NUM/block_num/4>>>(device_results,device_averages);
     for (int i = 0; i < NUM; i++) {
         results[i].x=0;
         results[i].y=0;
     }
     cudaMemcpy(results,device_results,results_size,cudaMemcpyDeviceToHost);
+    cudaMemcpy(averages,device_averages,results_size/4,cudaMemcpyDeviceToHost);
     for (int i = 0; i < NUM;i++) {
         std::cout << "x: " << results[i].x << ", y: " << results[i].y << "			";
         std::cout << "x: " << trail[i].x << ", y: " << trail[i].y << "\n";
-	std::cout << (results[i] == trail[i] ? "Pass\n" : "Fail\n");
+        std::cout << (results[i] == trail[i] ? "Pass\n" : "Fail\n");
+    }
+    for (int i = 0; i < NUM/4; i++) {
+        std::cout << "average x: " << averages[i].x << "average y: " << averages[i].y << std::endl;
     }
     delete [] distances;
     delete [] trail;
     delete [] results;
+    delete [] averages;
+    cudaFree(device_averages);
     cudaFree(device_distances);
     cudaFree(device_results);
 }
@@ -96,7 +115,7 @@ void generate_data(int NUM) {
 int main() {
     //clock_t start = clock();
     //double diff;
-    generate_data(4096);
+    generate_data(16);
     //diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
     //std::cout << "Time elapsed: "<< diff <<'\n';
     return 0;
