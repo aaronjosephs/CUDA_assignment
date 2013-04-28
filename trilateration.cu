@@ -47,10 +47,13 @@ __global__ void average(float2 * results, float2 * averages) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     averages[idx].x = 0;
     averages[idx].y = 0;
-    averages[idx] += results[4*idx];
-    averages[idx] += results[4*idx+1];
-    averages[idx] += results[4*idx+2];
-    averages[idx] += results[4*idx+3];
+    for (int i = 4 * idx; i < 4 * idx + 4; i++) {
+            averages[idx] += results[i];
+    }
+//    averages[idx] += results[4*idx];
+//    averages[idx] += results[4*idx+1];
+//    averages[idx] += results[4*idx+2];
+//    averages[idx] += results[4*idx+3];
     averages[idx] /= 4.0;
 }
 void generate_data(int NUM) {
@@ -115,7 +118,7 @@ void generate_data(int NUM) {
 int main() {
     //clock_t start = clock();
     //double diff;
-    generate_data(16);
+    generate_data(4096);
     //diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
     //std::cout << "Time elapsed: "<< diff <<'\n';
     return 0;
