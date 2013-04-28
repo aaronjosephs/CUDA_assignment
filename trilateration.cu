@@ -118,7 +118,7 @@ void generate_data(int NUM) {
 int main() {
     //clock_t start = clock();
     //double diff;
-    generate_data(4096);
+    generate_data(4096+2048);
     //diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
     //std::cout << "Time elapsed: "<< diff <<'\n';
     return 0;

@@ -3,3 +3,23 @@ Aaron Josephs       ajoseph4@binghamton.edu
 - Ran on an NVIDIA GeForce GT 650M
 
 - program can compile and execute on jupiter
+
+Time with NUM = 1024
+real	0m0.077s
+user	0m0.031s
+sys	0m0.032s
+
+Time with NUM = 2048
+real	0m0.093s
+user	0m0.035s
+sys	0m0.028s
+
+Time with NUM = 4096
+real	0m0.124s
+user	0m0.043s
+sys	0m0.037s
+
+Time with NUM = 5120
+real	0m0.126s
+user	0m0.047s
+sys	0m0.034s
